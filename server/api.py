@@ -40,7 +40,7 @@ class KEsupModel(db.Model):
     def __repr__(self):
         return f"<KEsup {self.name}>"
     
-
+db.create_all()
   
 @api.route('/')
 def hello():
@@ -73,7 +73,8 @@ def handle_supermarkets():
         "paid": supmkt.paid,
         "type": supmkt.food,
         "drinks": supmkt.drinks,
-        "food": supmkt.food
+        "food": supmkt.food,
+        "change": supmkt.change
         } for supmkt in kesup
     ]
 
