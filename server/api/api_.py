@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy  
 from flask_migrate import Migrate 
 from flask_restful import Resource, Api, abort
@@ -141,7 +141,8 @@ class KEsupSearch(Resource):
     def get(self, name):
         kesup = KEsupModel.query.filter(KEsupModel.name.ilike('%'+name+'%')).all()
         result = kesup_schemas.dump(kesup) 
-        return {'You searched': result}  
+        return {'You searched': result, "Number of results": len(result)} 
+         
         
 
 
