@@ -64,11 +64,9 @@ class HelloRestWorld(Resource):
 class KesupList(Resource):
     def get(self):
         all_supermarkets = KEsupModel.query.all()     
-        results = kesup_schema.dump(all_supermarkets)
-        for result in results:
-            unitprice = result['total']/result['no_of_items']
+        results = kesup_schemas.dump(all_supermarkets)
 
-        return {'Supermarkets': results, 'unitprice': round(unitprice, 2)}
+        return {'Supermarkets': results, 'Count': len(results)}   
 
     def post(self):
         name = request.json['name']
@@ -93,20 +91,64 @@ class KesupList(Resource):
 
         return {'Supermarkets': result, 'Unit Price': unitprice} 
 
+
 class KEsup(Resource):
     def get(self, kesup_id):
         kesup = KEsupModel.query.get(kesup_id)
         if kesup is not None:
             result = kesup_schema.dump(kesup)
-            return result
+            unitprice = result['total']/result['no_of_items']
+            return {'Supermarket': result, 'Unit Price': round(unitprice, 2)}  
         else:
             abort("Supermarket not found")  
 
-    
+    def put(self, kesup_id):
+        kesup = KEsupModel.query.get(kesup_id)
+        if kesup is not None:
+           name = request.json['name']
+           no_of_items = request.json['no_of_items']
+           total = request.json['total']
+           paid = request.json['paid']
+           change = request.json['change']
+           type_ = request.json['type_']
+           food = request.json['food']
+           drinks = request.json['drinks']
+           location = request.json['location']
+           kesup.name = name
+           kesup.no_of_items = no_of_items
+           kesup.total = total
+           kesup.paid = paid
+           kesup.change = change
+           kesup.type_ = type_
+           kesup.food = food
+           kesup.drinks = drinks
+           kesup.location = location
+
+           db.session.commit()
+           result = kesup_schema.dump(kesup)
+           return result 
+        else:
+            return {404, "Won't update"} 
+
+    def delete(self, kesup_id):
+        kesup = KEsupModel.query.get_or_404(kesup_id)
+        db.session.delete(kesup)
+        db.session.commit()
+        return 'DELETED', 204
+
+
+class KEsupSearch(Resource):
+    def get(self, name):
+        kesup = KEsupModel.query.filter(KEsupModel.name.ilike('%'+name+'%')).all()
+        result = kesup_schemas.dump(kesup) 
+        return {'You searched': result}  
+        
+
 
 api.add_resource(HelloRestWorld, '/')
 api.add_resource(KesupList, '/api/kesupermarkets')
 api.add_resource(KEsup, '/api/kesupermarkets/<int:kesup_id>')  
+api.add_resource(KEsupSearch, '/api/kesupermarkets/search/<string:name>')  
  
   
 if __name__ == '__main__':
